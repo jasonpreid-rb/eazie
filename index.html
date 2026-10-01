@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-<meta name="theme-color" content="#14213d" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#14213d">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet">
 <title>eazie</title>
 <style>
@@ -11,7 +11,7 @@
 --bg:#f5f4f1;--card:#fff;--ink:#1a1a19;--mute:#73726c;--line:#e4e2dc;--btn:#14213d;--btnink:#f5ff00;--acc:#14213d;
 --new:#1f7a50;--doing:#ff8f1f;--wait:#7a4fc2;--done:#2b5cc4;--over:#c62f2f}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14213d;--card:#1d2d52;--ink:#f1f0ec;--mute:#a4b0cc;--line:#2f4170;--btn:#f5ff00;--btnink:#14213d;--acc:#f5ff00;--over:#ff8a80}}
-:root[data-theme="dark"]{--bg:#14213d;--card:#1d2d52;--ink:#f1f0ec;--mute:#a4b0cc;--line:#2f4170;--btn:#f5ff00;--btnink:#14213d;--acc:#f5ff00;--over:#ff8a80}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#14213d;--card:#1d2d52;--ink:#f1f0ec;--mute:#a4b0cc;--line:#2f4170;--btn:#f5ff00;--btnink:#14213d;--acc:#f5ff00;--over:#ff8a80}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *,*:before,*:after{box-sizing:inherit}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:1rem;line-height:1.4}
@@ -172,7 +172,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
 </head>
 <body>
 <main>
-<div class="bar"><div class="logo"><span class="wm">eazie</span></div><div class="rt"><button class="so" id="ez" aria-pressed="false">eazie mode</button><button class="so" id="so">Sign out</button></div></div>
+<div class="bar"><div class="logo"><span class="wm">eazie</span></div><div class="rt"><button class="so" id="ez" aria-pressed="false">eazie mode</button><button class="so" id="so" hidden style="display:none">Sign out</button></div></div>
 <div class="head"><h1 id="ttl">Projects</h1><div class="ts" role="group" aria-label="Text size"><button data-z="0" aria-label="Normal text" title="Normal text" style="font-size:13px">A</button><button data-z="1" aria-label="Large text" title="Large text" style="font-size:17px">A</button><button data-z="2" aria-label="Extra large text" title="Extra large text" style="font-size:22px">A</button></div></div>
 <div class="srow"><input id="q" type="search" placeholder="Search projects" autocomplete="off" aria-label="Search projects"><div class="md" id="mt" role="group" aria-label="Project type"></div></div>
 <div id="list"></div>
