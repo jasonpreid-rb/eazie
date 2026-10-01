@@ -436,19 +436,27 @@ ezb.onclick=function(){easy=!easy;try{localStorage.setItem("easy",easy?"1":"0")}
 ezUI();
 (function(){
   var btn=document.getElementById("inst"),dp=null;
+  var ua=navigator.userAgent;
   var standalone=(window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone===true;
-  var ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+  var ios=/iphone|ipad|ipod/i.test(ua)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+  var android=/android/i.test(ua);
+  var safari=/safari/i.test(ua)&&!/chrome|crios|fxios|edg|android/i.test(ua);
   try{if("serviceWorker" in navigator)navigator.serviceWorker.register("/sw.js").catch(function(){})}catch(e){}
   if(standalone)return;
-  window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();dp=e;btn.textContent="Install app";btn.hidden=false});
+  btn.textContent=ios?"Add to Home Screen":"Install app";
+  btn.hidden=false;
+  window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();dp=e});
   window.addEventListener("appinstalled",function(){dp=null;btn.hidden=true;toast("eazie installed")});
-  if(ios){btn.textContent="Add to Home Screen";btn.hidden=false}
   btn.onclick=function(){
-    if(dp){dp.prompt();dp.userChoice.then(function(){dp=null;btn.hidden=true});return}
-    if(ios){
-      panel2.innerHTML='<p class="big">Add to Home Screen</p><p style="font-size:1.0625rem;margin:8px 0 0">1. Tap the <b>Share</b> button (the square with an arrow) in your browser.<br>2. Scroll down and tap <b>Add to Home Screen</b>.<br>3. Tap <b>Add</b>.</p><div class="acts" style="margin-top:20px"><button class="pb pri" id="ig">Got it</button></div>';
-      panel2.onclick=function(e){var b=e.target.closest("button");if(b&&b.id==="ig")sheet2.classList.remove("on")};
-      sheet2.classList.add("on")}
+    if(dp){dp.prompt();dp.userChoice.then(function(){dp=null});return}
+    var s;
+    if(ios)s=["Tap the <b>Share</b> button (the square with an arrow) in your browser.","Scroll down and tap <b>Add to Home Screen</b>.","Tap <b>Add</b>."];
+    else if(android)s=["Tap the browser menu <b>\u22EE</b> (top right).","Tap <b>Install app</b> or <b>Add to Home screen</b>.","Tap <b>Install</b>."];
+    else if(safari)s=["Click the <b>Share</b> button in the Safari toolbar.","Choose <b>Add to Dock</b>."];
+    else s=["Look for the <b>install icon</b> at the right end of the address bar and click it.","Or open the browser menu and choose <b>Install eazie</b> (Chrome: <b>Cast, save and share \u2192 Install page as app</b>; Edge: <b>Apps \u2192 Install this site as an app</b>).","Firefox on desktop doesn\u2019t support installing sites."];
+    panel2.innerHTML='<p class="big">Install eazie</p><p style="font-size:1.0625rem;margin:8px 0 0">'+s.map(function(x,k){return (s.length>1&&!(!ios&&!android&&!safari&&k===2)?(k+1)+". ":"")+x}).join("<br>")+'</p><div class="acts" style="margin-top:20px"><button class="pb pri" id="ig">Got it</button></div>';
+    panel2.onclick=function(e){var b=e.target.closest("button");if(b&&b.id==="ig")sheet2.classList.remove("on")};
+    sheet2.classList.add("on")
   };
 })();
 qEl.addEventListener("input",render);
