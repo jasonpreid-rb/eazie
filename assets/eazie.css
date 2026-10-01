@@ -1,0 +1,28 @@
+/* eazie brand stylesheet - shared by the app and the marketing pages.
+   Change colours/fonts here and everything stays consistent. */
+@font-face{font-family:"Inter";font-style:normal;font-weight:100 900;font-display:swap;src:url(../fonts/inter-latin-wght-normal.woff2) format("woff2")}
+@font-face{font-family:"Pacifico";font-style:normal;font-weight:400;font-display:swap;src:url(../fonts/pacifico-latin-400-normal.woff2) format("woff2")}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f5f4f1;--card:#fff;--ink:#1a1a19;--mute:#73726c;--line:#e4e2dc;--btn:#14213d;--btnink:#f5ff00;--acc:#14213d;
+--new:#1f7a50;--doing:#ff8f1f;--wait:#7a4fc2;--done:#2b5cc4;--over:#c62f2f}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14213d;--card:#1d2d52;--ink:#f1f0ec;--mute:#a4b0cc;--line:#2f4170;--btn:#f5ff00;--btnink:#14213d;--acc:#f5ff00;--over:#ff8a80}}
+:root[data-theme="dark"]{--bg:#14213d;--card:#1d2d52;--ink:#f1f0ec;--mute:#a4b0cc;--line:#2f4170;--btn:#f5ff00;--btnink:#14213d;--acc:#f5ff00;--over:#ff8a80}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*:before,*:after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:1rem;line-height:1.4}
+.wm{display:inline-block;font-family:"Pacifico","Segoe Script","Brush Script MT",cursive;font-size:2.4rem;line-height:1.35;padding:0 8px;color:#14213d;background:linear-gradient(transparent 52%,#f5ff00 52%);transform-origin:left center}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .wm{color:#f5ff00;background:none}}
+:root[data-theme="dark"] .wm{color:#f5ff00;background:none}
+a{color:var(--acc)}
+.wrap{max-width:960px;margin:0 auto;padding:0 20px}
+.site-header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 0}
+.site-header .wm{text-decoration:none}
+.eb{display:inline-block;background:var(--btn);color:var(--btnink);border:0;border-radius:12px;padding:14px 22px;font:inherit;font-weight:600;text-decoration:none;cursor:pointer}
+.eb.ghost{background:none;color:var(--acc);border:1.5px solid var(--acc)}
+.hero{padding:56px 0 40px}
+.hero h1{font-size:clamp(2rem,6vw,3.25rem);line-height:1.1;letter-spacing:-.02em;margin:0 0 16px}
+.hero p{font-size:1.125rem;color:var(--mute);max-width:36rem;margin:0 0 24px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.ec{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+.ec h3{margin:0 0 8px}
+.site-footer{padding:32px 0;color:var(--mute);font-size:.875rem;border-top:1px solid var(--line);margin-top:48px}

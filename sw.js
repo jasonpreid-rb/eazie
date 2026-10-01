@@ -1,8 +1,25 @@
-var V="eazie-v1",A=["/","/favicon.svg","/icon-192.png","/icon-512.png"];
-self.addEventListener("install",function(e){e.waitUntil(caches.open(V).then(function(c){return Promise.all(A.map(function(u){return c.add(u).catch(function(){})}))}).then(function(){return self.skipWaiting()}))});
-self.addEventListener("activate",function(e){e.waitUntil(caches.keys().then(function(k){return Promise.all(k.filter(function(x){return x!==V}).map(function(x){return caches.delete(x)}))}).then(function(){return self.clients.claim()}))});
-self.addEventListener("fetch",function(e){
-  var r=e.request;
-  if(r.method!=="GET"||new URL(r.url).origin!==location.origin)return;
-  e.respondWith(fetch(r).then(function(res){var cp=res.clone();caches.open(V).then(function(c){c.put(r,cp)});return res}).catch(function(){return caches.match(r).then(function(m){return m||caches.match("/")})}));
+/* eazie service worker - lets the app open offline.
+   Bump VERSION whenever you upload new files so phones pick them up. */
+const VERSION = "eazie-v1";
+const FILES = ["./", "index.html", "assets/eazie.css", "assets/app.css", "assets/app.js",
+  "fonts/inter-latin-wght-normal.woff2", "fonts/pacifico-latin-400-normal.woff2",
+  "manifest.webmanifest", "favicon.svg", "icons/icon-192.png", "icons/icon-512.png"];
+
+self.addEventListener("install", e => {
+  e.waitUntil(caches.open(VERSION).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
+});
+self.addEventListener("activate", e => {
+  e.waitUntil(caches.keys()
+    .then(keys => Promise.all(keys.filter(k => k !== VERSION).map(k => caches.delete(k))))
+    .then(() => self.clients.claim()));
+});
+/* Network first (so updates show up), cache as the offline fallback.
+   Other sites (e.g. analytics) are left alone. */
+self.addEventListener("fetch", e => {
+  const r = e.request;
+  if (r.method !== "GET" || new URL(r.url).origin !== location.origin) return;
+  e.respondWith(
+    fetch(r).then(res => { const copy = res.clone(); caches.open(VERSION).then(c => c.put(r, copy)); return res; })
+      .catch(() => caches.match(r).then(m => m || caches.match("index.html")))
+  );
 });
