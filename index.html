@@ -9,6 +9,11 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico" sizes="48x48">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="eazie">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
 --bg:#f5f4f1;--card:#fff;--ink:#1a1a19;--mute:#73726c;--line:#e4e2dc;--btn:#14213d;--btnink:#f5ff00;--acc:#14213d;
@@ -175,7 +180,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
 </head>
 <body>
 <main>
-<div class="bar"><div class="logo"><span class="wm">eazie</span></div><div class="rt"><button class="so" id="ez" aria-pressed="false">eazie mode</button><button class="so" id="so" hidden style="display:none">Sign out</button></div></div>
+<div class="bar"><div class="logo"><span class="wm">eazie</span></div><div class="rt"><button class="so" id="ez" aria-pressed="false">eazie mode</button><button class="so" id="inst" hidden>Install app</button><button class="so" id="so" hidden style="display:none">Sign out</button></div></div>
 <div class="head"><h1 id="ttl">Projects</h1><div class="ts" role="group" aria-label="Text size"><button data-z="0" aria-label="Normal text" title="Normal text" style="font-size:13px">A</button><button data-z="1" aria-label="Large text" title="Large text" style="font-size:17px">A</button><button data-z="2" aria-label="Extra large text" title="Extra large text" style="font-size:22px">A</button></div></div>
 <div class="srow"><input id="q" type="search" placeholder="Search projects" autocomplete="off" aria-label="Search projects"><div class="md" id="mt" role="group" aria-label="Project type"></div></div>
 <div id="list"></div>
@@ -429,6 +434,23 @@ var ezb=document.getElementById("ez");
 function ezUI(){ezb.setAttribute("aria-pressed",String(easy));ezb.textContent=easy?"✓ eazie mode":"eazie mode"}
 ezb.onclick=function(){easy=!easy;try{localStorage.setItem("easy",easy?"1":"0")}catch(e){}ezUI();setZ(zi);animG=null;render()};
 ezUI();
+(function(){
+  var btn=document.getElementById("inst"),dp=null;
+  var standalone=(window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone===true;
+  var ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+  try{if("serviceWorker" in navigator)navigator.serviceWorker.register("/sw.js").catch(function(){})}catch(e){}
+  if(standalone)return;
+  window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();dp=e;btn.textContent="Install app";btn.hidden=false});
+  window.addEventListener("appinstalled",function(){dp=null;btn.hidden=true;toast("eazie installed")});
+  if(ios){btn.textContent="Add to Home Screen";btn.hidden=false}
+  btn.onclick=function(){
+    if(dp){dp.prompt();dp.userChoice.then(function(){dp=null;btn.hidden=true});return}
+    if(ios){
+      panel2.innerHTML='<p class="big">Add to Home Screen</p><p style="font-size:1.0625rem;margin:8px 0 0">1. Tap the <b>Share</b> button (the square with an arrow) in your browser.<br>2. Scroll down and tap <b>Add to Home Screen</b>.<br>3. Tap <b>Add</b>.</p><div class="acts" style="margin-top:20px"><button class="pb pri" id="ig">Got it</button></div>';
+      panel2.onclick=function(e){var b=e.target.closest("button");if(b&&b.id==="ig")sheet2.classList.remove("on")};
+      sheet2.classList.add("on")}
+  };
+})();
 qEl.addEventListener("input",render);
 render();
 </script>
