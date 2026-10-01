@@ -12,6 +12,7 @@ function dueFmt(iso,full){
   return d.toLocaleDateString([],o);
 }
 function timeFmt(t){if(!t)return "";var p=t.split(":");return new Date(2000,0,1,+p[0],+p[1]).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}
+function vis(j){return !j.sched||!!qEl.value.trim()||j.due<=iso(new Date())}
 function att(j){if(!j.due||j.s==="done")return false;var n=new Date();n.setHours(0,0,0,0);return Math.round((new Date(j.due+"T00:00:00")-n)/864e5)<=1}
 function od(j){if(!j.due||j.s==="done")return false;var n=new Date();n.setHours(0,0,0,0);return new Date(j.due+"T00:00:00")<n}
 function save(){if(window.eazieInstallCheck)setTimeout(window.eazieInstallCheck,1200);try{localStorage.setItem("jobs",JSON.stringify(jobs))}catch(e){}}
@@ -36,7 +37,11 @@ function nextDue(j){
   return iso(d)
 }
 function setS(j,k){if(j.s===k)return;
-  if(k==="done"&&j.rep&&j.type==="personal"){var nx=nextDue(j);j.due=nx;j.s="new";log(j,"status","Done · repeats "+RP[j.rep].toLowerCase()+", next due "+dueFmt(nx,1));toast("Done! Next: "+dueFmt(nx,1));animG="all";save();render();return}
+  if(k==="done"&&j.rep&&j.type==="personal"&&!j.spawned){
+    var nx=nextDue(j);j.s="done";j.spawned=true;
+    log(j,"status","Status: Done");log(j,"status","Repeats "+RP[j.rep].toLowerCase()+", next on "+dueFmt(nx,1));
+    jobs.unshift({id:Date.now()+1,type:j.type,ref:j.ref||"",name:j.name||"",title:j.title,place:j.place||"",price:j.price||"",due:nx,time:j.time||"",rep:j.rep,phone:j.phone||"",s:"new",sched:true,log:[{t:Date.now(),type:"added",text:"Scheduled repeat ("+RP[j.rep].toLowerCase()+")"}]});
+    toast("Done! Back on "+dueFmt(nx,1));animG="all";save();render();return}
 j.s=k;log(j,"status","Status: "+sInfo(k)[2]);animG="all";save();render()}
 var sheet2=document.getElementById("sheet2"),panel2=document.getElementById("panel2");
 var list=document.getElementById("list"),sheet=document.getElementById("sheet"),panel=document.getElementById("panel");
@@ -84,13 +89,16 @@ function bucket(t){
   return[d.getFullYear()+"-"+d.getMonth(),d.toLocaleDateString([],{month:"long",year:"numeric"})];
 }
 function render(){
+  var td=iso(new Date()),rv=false;
+  jobs.forEach(function(j){if(j.sched&&j.due<=td){j.sched=false;rv=true;log(j,"status","Back on the list")}});
+  if(rv)save();
   var h="",n=0,an=animG;animG=null;
   var T=mode==="personal"?"task":"project";
   document.getElementById("ttl").textContent=T==="task"?"Tasks":"Projects";
   qEl.placeholder="Search "+T+"s";qEl.setAttribute("aria-label",qEl.placeholder);
   document.getElementById("add").textContent="+ New "+T;
   S.forEach(function(s){
-    var js=jobs.filter(function(j){return j.s===s[0]&&inMode(j)&&hit(j)});
+    var js=jobs.filter(function(j){return j.s===s[0]&&inMode(j)&&hit(j)&&vis(j)});
     if(!js.length)return;
     var bc={},lastB=null;
     if(s[0]==="done"){js=js.slice().sort(function(a,b){return doneAt(b)-doneAt(a)});js.forEach(function(j){var k=bucket(doneAt(j))[0];bc[k]=(bc[k]||0)+1})}
@@ -103,11 +111,12 @@ function render(){
         if(!sOpen)return}
       var P=j.type==="personal",du=j.due?'<span'+(od(j)?' style="color:var(--over);font-weight:600"':'')+'>Due '+esc(dueFmt(j.due)+(j.time?" "+timeFmt(j.time):""))+'</span>':'';
       if(j.s==="done")du='✓ Done '+fmtD(doneAt(j));
+      if(j.sched&&j.due>iso(new Date()))du='<span>Appears '+esc(dueFmt(j.due,1))+'</span>';
       var sub=(P?[j.place?esc(j.place):"",du,j.rep?"↻ "+RP[j.rep]:""]:[(!easy&&j.ref)?esc(j.ref):"",(j.name&&j.title)?esc(j.title):"",du]).filter(Boolean);
       h+='<button class="job'+(go?' in':'')+(att(j)?' pulse':'')+'" style="--c:'+s[3]+';--pc:'+(od(j)?"#ff1f1f":"var(--acc)")+';animation-delay:'+(Math.min(n++,12)*45)+'ms" data-id="'+j.id+'">'+(!P&&!easy&&j.price?'<span class="r">'+esc(j.price)+'</span>':'')+'<b>'+esc(P?(j.title||j.name):(j.name||j.title))+'</b><small>'+sub.join(" · ")+'</small></button>';
     });
   });
-  list.innerHTML=h||(jobs.filter(inMode).length?'<div class="empty">No matches</div>':'<div class="empty">No '+T+'s yet.<br>Tap + New '+T+'</div>');
+  list.innerHTML=h||(jobs.filter(function(j){return inMode(j)&&vis(j)}).length?'<div class="empty">No matches</div>':'<div class="empty">No '+T+'s yet.<br>Tap + New '+T+'</div>');
 }
 list.addEventListener("click",function(e){
   var g=e.target.closest(".gh,.sub");
@@ -195,7 +204,7 @@ function form(j){
   var ty=j?(j.type==="personal"?"personal":"work"):mode;
   var h='<div class="top" style="margin-bottom:12px"><button class="ed" id="fb">← Back</button>'+(j?'<div class="md" id="ft" role="group" aria-label="Project type">'+mdHTML(ty)+'</div>':'')+'</div><p class="big" id="fh">'+(j?'Edit ':'New ')+(ty==="personal"?"task":"project")+'</p><div id="fw"'+(ty==="personal"?' class="pers"':'')+'>'+F.map(function(f){
     if(f[0]==="time")return "";
-    if(f[0]==="rep")return '<div class="f pr"><label>Repeat <span class="op">(optional)</span></label><div class="chips" id="rp">'+Object.keys(RP).map(function(k){return '<button type="button" class="chip'+(rp===k?' on':'')+'" data-r="'+k+'">'+RP[k]+'</button>'}).join("")+'</div></div>';
+    if(f[0]==="rep")return '<div class="f pr"><label>Repeat <span class="op">(optional)</span></label><div class="chips" id="rp">'+Object.keys(RP).map(function(k){return '<button type="button" class="chip'+(rp===k?' on':'')+'" data-r="'+k+'">'+RP[k]+'</button>'}).join("")+'</div><p class="hint">When you tick a repeating task off, it moves to Done and comes back on its next due date.</p></div>';
     if(f[0]==="due")return '<div><label for="f-due-btn">Due <span class="op">(optional)</span></label><button type="button" class="dueb" id="f-due-btn">'+esc(dt())+'</button></div>';
     return '<div class="f'+(WK[f[0]]?' wk':'')+(EZ[f[0]]?' ez':'')+'"><label for="f-'+f[0]+'">'+(f[0]==="title"&&ty==="personal"?"Task":f[1])+(OPT[f[0]]?' <span class="op">(optional)</span>':'')+'</label><input id="f-'+f[0]+'" type="'+(f[0]==="phone"?"tel":"text")+'" placeholder="'+(f[0]==="title"&&ty==="personal"?"Task details":f[2])+'" autocomplete="off" value="'+esc(j?(j[f[0]]||""):(f[0]==="ref"?nextRef():""))+'"></div>'}).join("")+'</div>';
   panel.innerHTML=h+'<button class="sv" id="sv">Save</button>';
@@ -232,6 +241,7 @@ function ezUI(){ezb.setAttribute("aria-pressed",String(easy));ezb.textContent=ea
 ezb.onclick=function(){easy=!easy;try{localStorage.setItem("easy",easy?"1":"0")}catch(e){}ezUI();setZ(zi);animG=null;render()};
 ezUI();
 qEl.addEventListener("input",render);
+document.addEventListener("visibilitychange",function(){if(!document.hidden){animG=null;render()}});
 render();
 
 /* ---- Add to Home Screen prompt (shown once a first item exists) ---- */
