@@ -2,39 +2,78 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-<title>eazie</title>
-<meta name="description" content="eazie - simple project and task tracking that lives on your device. No sign-up needed.">
+<script>if((window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone)location.replace("app/")</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>eazie: a simple task and reminder app anyone can use</title>
+<meta name="description" content="eazie is a simple task and reminder app with no login, no clutter and nothing to learn. If you can read, you can use it. See what makes it different.">
+<link rel="canonical" href="https://eazie.net/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="eazie">
+<meta property="og:title" content="eazie: a simple task and reminder app anyone can use">
+<meta property="og:description" content="eazie is a simple task and reminder app with no login, no clutter and nothing to learn. If you can read, you can use it. See what makes it different.">
+<meta property="og:url" content="https://eazie.net/">
+<meta property="og:image" content="https://eazie.net/icons/icon-512.png">
 <meta name="theme-color" content="#14213d">
-<link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon.ico" sizes="48x48">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="eazie">
 <link rel="preload" href="fonts/pacifico-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/eazie.css">
-<link rel="stylesheet" href="assets/app.css">
-<!-- GOOGLE SEARCH CONSOLE: if you verify with the HTML tag method, paste Google's meta tag here:
-<meta name="google-site-verification" content="XXXXXXXX"> -->
+<script type="application/ld+json">[{"@context": "https://schema.org", "@type": "WebApplication", "name": "eazie", "url": "https://eazie.net/", "description": "A simple task and reminder app with no login.", "applicationCategory": "ProductivityApplication", "operatingSystem": "Any (web browser)"}, {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Do I need an account?", "acceptedAnswer": {"@type": "Answer", "text": "No. There is nothing to sign up for and no password to remember."}}, {"@type": "Question", "name": "Where is my list stored?", "acceptedAnswer": {"@type": "Answer", "text": "On your own device, in your browser. We never see it. See the privacy policy."}}, {"@type": "Question", "name": "Does it work without internet?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. After your first visit it opens offline."}}, {"@type": "Question", "name": "Can I use it on my phone and my computer?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, but each device keeps its own separate list."}}, {"@type": "Question", "name": "Does eazie send notifications?", "acceptedAnswer": {"@type": "Answer", "text": "No. Items that are due today, tomorrow or overdue pulse on screen when you open it."}}, {"@type": "Question", "name": "Is it suitable for someone with dementia or Alzheimer's?", "acceptedAnswer": {"@type": "Answer", "text": "It is designed to be as simple as possible, but every person is different. Try it together first. eazie is an everyday organiser, not a medical device, so please do not rely on it for medication or anything safety-critical."}}, {"@type": "Question", "name": "Can I add it to my home screen?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. On Android tap Install when it appears. On iPhone tap Share, then Add to Home Screen."}}, {"@type": "Question", "name": "Can I make the text bigger?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. There are three text sizes, and eazie mode makes everything a little larger and calmer."}}]}]</script>
 <script src="assets/analytics.js" defer></script>
 </head>
 <body>
-<main>
-<div class="bar"><div class="logo"><span class="wm">eazie</span></div><div class="rt"><button class="so" id="ez" aria-pressed="false">eazie mode</button></div></div>
-<div class="head"><h1 id="ttl">Projects</h1><div class="ts" role="group" aria-label="Text size"><button data-z="0" aria-label="Normal text" title="Normal text" style="font-size:13px">A</button><button data-z="1" aria-label="Large text" title="Large text" style="font-size:17px">A</button><button data-z="2" aria-label="Extra large text" title="Extra large text" style="font-size:22px">A</button></div></div>
-<div class="srow"><input id="q" type="search" placeholder="Search projects" autocomplete="off" aria-label="Search projects"><div class="md" id="mt" role="group" aria-label="Project type"></div></div>
-<div id="list"></div>
-<p class="legal"><a href="imprint.html">Legal notice</a><a href="privacy.html">Privacy</a><a href="#" data-cookie-settings hidden>Cookie settings</a></p>
-</main>
-<div id="toast" role="status" aria-live="polite"></div>
-<button id="add">+ New project</button>
+<div class="wrap landing">
+  <header class="site-header">
+    <a href="./" class="wm" aria-label="eazie home">eazie</a>
+    <a class="eb" href="app/">Open the app</a>
+  </header>
 
-<div class="sheet" id="sheet"><div class="panel" id="panel"></div></div>
-<div class="sheet" id="sheet2" style="z-index:6"><div class="panel" id="panel2"></div></div>
+  <section class="hero2">
+    <div>
+      <h1>A simple task and reminder app anyone can use</h1>
+      <p>If you can read, you can use it. No login, no clutter and nothing to learn. Open it and start.</p>
+      <div class="btns"><a class="eb" href="app/">Try eazie now</a><a class="eb ghost" href="#different">What makes it different</a></div>
+    </div>
+    <img src="screens/text-size-normal.webp" width="780" height="1688" fetchpriority="high" alt="The eazie task list on a phone, showing New, Doing and Waiting categories">
+  </section>
 
-<div id="ib" hidden><p id="ibm"></p><button class="go" id="ibg" hidden>Install</button><button class="x2" id="ibx">Not now</button></div>
-<script src="assets/app.js" defer></script>
+  <section class="sec2" id="different">
+    <h2>Eight things that make eazie different</h2>
+    <p class="sub">Most task apps keep adding. eazie keeps taking away, until only what you need is left.</p>
+    <div class="cards8"><div class="fc"><span class="num">1</span><h3>Simplicity, perfected</h3><p>One screen, plain words and four clear steps. There is nothing to learn.</p><a href="simple-reminder-app.html">See how simple &rarr;</a></div><div class="fc"><span class="num">2</span><h3>Suitable for children</h3><p>Big buttons and plain words, so kids who can read can use it.</p><a href="app-for-kids.html">eazie for kids &rarr;</a></div><div class="fc"><span class="num">3</span><h3>If you can read, you can use it</h3><p>Every button says what it does. No hidden menus and no jargon.</p></div><div class="fc"><span class="num">4</span><h3>Made for older adults</h3><p>Adjustable text size, strong contrast and eazie mode. Designed with dementia and Alzheimer&#x27;s in mind.</p><a href="app-for-elderly.html">eazie for older adults &rarr;</a></div><div class="fc"><span class="num">5</span><h3>No login details to remember</h3><p>No account, no email and no password to forget.</p><a href="no-login-app.html">No-login to-do app &rarr;</a></div><div class="fc"><span class="num">6</span><h3>Works instantly</h3><p>Open it and start typing. Nothing to set up, and it opens offline after your first visit.</p></div><div class="fc"><span class="num">7</span><h3>Only what you need, nothing you don&#x27;t</h3><p>A title is all it takes. Due dates, repeats and notes are there only if you want them.</p><a href="simple-reminder-app.html">What is (and isn&#x27;t) in eazie &rarr;</a></div><div class="fc"><span class="num">8</span><h3>Possibly the simplest reminder tool there is</h3><p>Anything due pulses on screen, so it is hard to miss. Yellow when it is coming up, red when it is overdue.</p></div></div>
+    <div class="note"><strong>Good to know:</strong> eazie does not send push notifications or alarms. It shows you what needs attention when you open it.</div>
+  </section>
+
+  <section class="sec2">
+    <h2>See it in action</h2>
+    <div class="demo"><div><h3>Text that grows with you</h3><p>Three sizes, switched with one tap at the top of the screen. Bigger text, bigger buttons.</p></div><div class="shots"><figure><img src="screens/text-size-normal.webp" width="780" height="1688" loading="lazy" alt="eazie at normal text size"><figcaption>Normal</figcaption></figure><figure><img src="screens/text-size-large.webp" width="780" height="1688" loading="lazy" alt="eazie at large text size"><figcaption>Large</figcaption></figure><figure><img src="screens/text-size-extra-large.webp" width="780" height="1688" loading="lazy" alt="eazie at extra large text size"><figcaption>Extra large</figcaption></figure></div></div><div class="demo"><div><h3>eazie mode</h3><p>One tap makes the screen calmer: slightly larger, no animation, and the extras like job numbers are hidden.</p></div><div class="shots two"><figure><img src="screens/eazie-mode-off.webp" width="780" height="1688" loading="lazy" alt="eazie with eazie mode off"><figcaption>Off</figcaption></figure><figure><img src="screens/eazie-mode-on.webp" width="780" height="1688" loading="lazy" alt="eazie with eazie mode on"><figcaption>On</figcaption></figure></div></div><div class="demo"><div><h3>Things that need attention pulse</h3><p>A soft yellow pulse for tasks due today or tomorrow. A bright red pulse when something is overdue.</p></div><div class="shots two"><figure><img src="screens/pulse-due-soon.webp" width="600" height="498" loading="lazy" alt="Tasks due today and tomorrow pulsing with a yellow ring"><figcaption>Due soon</figcaption></figure><figure><img src="screens/pulse-overdue.webp" width="600" height="498" loading="lazy" alt="Overdue tasks pulsing with a red ring"><figcaption>Overdue</figcaption></figure></div></div>
+  </section>
+
+  <section class="sec2">
+    <h2>How it works</h2>
+    <div class="steps"><div class="fc"><span class="num">1</span><h3>Type a title</h3><p>Tap + New task and write what you need to do. That is the only thing required.</p></div><div class="fc"><span class="num">2</span><h3>Say where it is up to</h3><p>New, Doing, Waiting or Done. The colours match, and each one has its name on it.</p></div><div class="fc"><span class="num">3</span><h3>Tick it off</h3><p>Finished tasks move to Done. Add a due date or a repeat only if you want one.</p></div></div>
+  </section>
+
+  <section class="sec2">
+    <h2>Who eazie is for</h2>
+    <ul class="related"><li><a href="app-for-elderly.html">Older adults<span>Big, clear and calm</span></a></li><li><a href="dementia-friendly-app.html">Dementia and Alzheimer's<span>Simple for people and carers</span></a></li><li><a href="app-for-kids.html">Children who can read<span>A to-do list kids can read</span></a></li><li><a href="no-login-app.html">Anyone who dislikes logins<span>No account, no password</span></a></li></ul>
+  </section>
+
+  <section class="sec2 faq">
+    <h2>Common questions</h2>
+    <h3>Do I need an account?</h3><p>No. There is nothing to sign up for and no password to remember.</p><h3>Where is my list stored?</h3><p>On your own device, in your browser. We never see it. See the <a href="privacy.html">privacy policy</a>.</p><h3>Does it work without internet?</h3><p>Yes. After your first visit it opens offline.</p><h3>Can I use it on my phone and my computer?</h3><p>Yes, but each device keeps its own separate list.</p><h3>Does eazie send notifications?</h3><p>No. Items that are due today, tomorrow or overdue pulse on screen when you open it.</p><h3>Is it suitable for someone with dementia or Alzheimer's?</h3><p>It is designed to be as simple as possible, but every person is different. Try it together first. eazie is an everyday organiser, not a medical device, so please do not rely on it for medication or anything safety-critical.</p><h3>Can I add it to my home screen?</h3><p>Yes. On Android tap Install when it appears. On iPhone tap Share, then Add to Home Screen.</p><h3>Can I make the text bigger?</h3><p>Yes. There are three text sizes, and eazie mode makes everything a little larger and calmer.</p>
+  </section>
+
+  <div class="band">
+    <h2>Ready when you are</h2>
+    <p>No sign-up. Open it and write your first task.</p>
+    <a class="eb" href="app/">Open eazie</a>
+  </div>
+
+  <footer class="site-footer">
+    <p>&copy; eazie &middot; <a href="imprint.html">Legal notice</a> &middot; <a href="privacy.html">Privacy</a> &middot; <a href="#" data-cookie-settings hidden>Cookie settings</a></p>
+  </footer>
+</div>
 </body>
 </html>

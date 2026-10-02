@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<title>eazie</title>
+<meta name="description" content="eazie - simple project and task tracking that lives on your device. No sign-up needed.">
+<meta name="theme-color" content="#14213d">
+<link rel="canonical" href="https://eazie.net/app/">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../favicon.ico" sizes="48x48">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="eazie">
+<link rel="preload" href="../fonts/pacifico-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../assets/eazie.css">
+<link rel="stylesheet" href="assets/app.css">
+<!-- GOOGLE SEARCH CONSOLE: if you verify with the HTML tag method, paste Google's meta tag here:
+<meta name="google-site-verification" content="XXXXXXXX"> -->
+<script src="../assets/analytics.js" defer></script>
+</head>
+<body>
+<main>
+<div class="bar"><div class="logo"><span class="wm">eazie</span></div><div class="rt"><button class="so" id="ez" aria-pressed="false">eazie mode</button></div></div>
+<div class="head"><h1 id="ttl">Projects</h1><div class="ts" role="group" aria-label="Text size"><button data-z="0" aria-label="Normal text" title="Normal text" style="font-size:13px">A</button><button data-z="1" aria-label="Large text" title="Large text" style="font-size:17px">A</button><button data-z="2" aria-label="Extra large text" title="Extra large text" style="font-size:22px">A</button></div></div>
+<div class="srow"><input id="q" type="search" placeholder="Search projects" autocomplete="off" aria-label="Search projects"><div class="md" id="mt" role="group" aria-label="Project type"></div></div>
+<div id="list"></div>
+<p class="legal"><a href="../">About eazie</a><a href="../imprint.html">Legal notice</a><a href="../privacy.html">Privacy</a><a href="#" data-cookie-settings hidden>Cookie settings</a></p>
+</main>
+<div id="toast" role="status" aria-live="polite"></div>
+<button id="add">+ New project</button>
+
+<div class="sheet" id="sheet"><div class="panel" id="panel"></div></div>
+<div class="sheet" id="sheet2" style="z-index:6"><div class="panel" id="panel2"></div></div>
+
+<div id="ib" hidden><p id="ibm"></p><button class="go" id="ibg" hidden>Install</button><button class="x2" id="ibx">Not now</button></div>
+<script src="assets/app.js" defer></script>
+</body>
+</html>

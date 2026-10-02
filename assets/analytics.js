@@ -4,7 +4,7 @@
    Until the ID is set, nothing loads and no banner is shown. */
 (function () {
   var ID = "G-N653ZDCX2G";          // <-- your GA4 Measurement ID
-  var PRIVACY = "privacy.html";   // <-- your privacy policy page
+  var PRIVACY = "/privacy.html";   // <-- your privacy policy page
   var KEY = "eazie_consent";
   var on = /^G-[A-Z0-9]{6,}$/.test(ID) && ID !== "G-XXXXXXXXXX";
   var loaded = false;
