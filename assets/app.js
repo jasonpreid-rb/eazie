@@ -226,6 +226,7 @@ function form(j){
       if(ch.length){log(j,"edit","Edited: "+ch.join(", "));save();render()}
       openJob(j.id);return;
     }
+    if(window.track)track("add_item",{item_type:ty});
     animG="all";jobs.unshift({id:Date.now(),type:ty,ref:ty==="personal"?"":g("ref"),name:g("name"),title:g("title"),place:g("place"),price:g("price"),due:g("due"),time:g("time"),rep:ty==="personal"?rp:"",phone:g("phone"),s:"new",log:[{t:Date.now(),type:"added",text:"Project added"}]});
     save();render();close();
   };

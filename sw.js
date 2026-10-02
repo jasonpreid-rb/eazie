@@ -1,7 +1,7 @@
 /* eazie service worker - lets the app open offline.
    Bump VERSION whenever you upload new files so phones pick them up. */
-const VERSION = "eazie-v1";
-const FILES = ["./", "index.html", "assets/eazie.css", "assets/app.css", "assets/app.js",
+const VERSION = "eazie-v4";
+const FILES = ["./", "index.html", "assets/eazie.css", "assets/app.css", "assets/app.js", "assets/analytics.js",
   "fonts/inter-latin-wght-normal.woff2", "fonts/pacifico-latin-400-normal.woff2",
   "manifest.webmanifest", "favicon.svg", "icons/icon-192.png", "icons/icon-512.png"];
 

@@ -29,16 +29,26 @@ limited to the app and does not interfere with the marketing pages.
 Link `assets/eazie.css` on every page (see `template.html`). Colours live in the `:root`
 variables at the top of that file, so changing one value updates the app and every page.
 
-## Analytics
-Paste your snippet where the `ANALYTICS` comment is in `index.html` and `template.html`.
-Notes:
-- A cookie-free tool such as Plausible, Fathom or Umami usually avoids needing a cookie banner.
-  Google Analytics normally does need consent in Germany/EU.
-- eazie stores projects only on the person's device. The analytics tool will not see them,
-  but check what it collects and say so in your privacy page.
-- Content-security headers: if you add any, allow your analytics domain.
-- Germany: a commercial site needs an Impressum and a privacy policy (Datenschutzerklaerung).
-  Get that checked by a professional; this is not legal advice.
+## Analytics and Search Console
+**Google Analytics 4** (consent-gated):
+1. analytics.google.com > Admin > create an account and property for eazie.net.
+2. Add a **Web** data stream for `https://eazie.net` and copy the **Measurement ID** (`G-...`).
+3. Paste it into `assets/analytics.js` (`var ID = ...`). Until then nothing loads.
+4. Fill in `privacy.html` and `imprint.html` (yellow [brackets] = your details), then upload the folder.
+The script only loads Google Analytics after a visitor presses Accept, and the "Cookie settings"
+link lets them change their mind. It also switches off Google signals and ad personalisation.
+Anonymous events sent: `app_installed` and `add_item` (work or personal). No project text is ever sent.
+
+**Search Console:**
+1. search.google.com/search-console > Add property > **Domain** > `eazie.net`.
+2. Add the TXT record Google shows at your DNS provider, wait about 15 minutes, press Verify.
+   (Alternative: URL prefix property and paste the meta tag where marked in `index.html`.)
+3. Sitemaps > submit `sitemap.xml`. Add every new marketing page to that file.
+4. URL Inspection > request indexing for the home page.
+5. In GA4 Admin > Product links, link Search Console to see search queries inside Analytics.
+
+Germany/EU: a commercial site needs an Impressum and a privacy policy that names Google
+Analytics, and the banner wording should match it. Have both checked by a professional.
 
 ## Updating the app
 Upload the changed files, and **change `VERSION` in `sw.js`** (for example `eazie-v2`) so phones

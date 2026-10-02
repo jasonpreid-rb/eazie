@@ -143,3 +143,6 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
 #ib p{margin:0;flex:1;font-size:.9375rem}
 #ib .go{background:var(--btn);color:var(--btnink);border:0;border-radius:10px;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer}
 #ib .x2{background:none;border:0;color:var(--mute);font:inherit;padding:10px 6px;cursor:pointer}
+.legal{text-align:center;margin:28px 0 0;font-size:.8125rem}
+.legal a{color:var(--mute)}
+.legal a{margin:0 10px}
