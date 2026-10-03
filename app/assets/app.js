@@ -15,7 +15,7 @@ function timeFmt(t){if(!t)return "";var p=t.split(":");return new Date(2000,0,1,
 function vis(j){return !j.sched||!!qEl.value.trim()||j.due<=iso(new Date())}
 function att(j){if(!j.due||j.s==="done")return false;var n=new Date();n.setHours(0,0,0,0);return Math.round((new Date(j.due+"T00:00:00")-n)/864e5)<=1}
 function od(j){if(!j.due||j.s==="done")return false;var n=new Date();n.setHours(0,0,0,0);return new Date(j.due+"T00:00:00")<n}
-function save(){if(window.eazieInstallCheck)setTimeout(window.eazieInstallCheck,1200);try{localStorage.setItem("jobs",JSON.stringify(jobs))}catch(e){}}
+function save(){if(window.eazieNudge)eazieNudge();if(window.eazieInstallCheck)setTimeout(window.eazieInstallCheck,1200);try{localStorage.setItem("jobs",JSON.stringify(jobs))}catch(e){}}
 (function(){var ch=false;jobs.forEach(function(j){if(j.when!==undefined){var w=j.when;delete j.when;ch=true;
   if(/^\d{4}-\d\d-\d\d$/.test(w))j.due=w;else{j.due="";if(w)log(j,"note","Previous due text: "+w)}}});if(ch)save()})();
 function esc(s){return String(s||"").replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
@@ -23,7 +23,7 @@ function sInfo(k){return S.filter(function(s){return s[0]===k})[0]}
 function fmt(t){var d=new Date(t),n=new Date(),same=d.toDateString()===n.toDateString(),y=new Date(n-864e5).toDateString()===d.toDateString();
   var hm=d.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
   return (same?"Today":y?"Yesterday":d.toLocaleDateString([],{day:"numeric",month:"short"}))+" "+hm}
-function ens(j){if(!j.log)j.log=[{t:j.id,type:"added",text:ty==="personal"?"Task added":"Project added"}]}
+function ens(j){if(!j.log)j.log=[{t:j.id,type:"added",text:ty==="personal"?"Task added":"Job added"}]}
 function log(j,type,text){ens(j);j.log.push({t:Date.now(),type:type,text:text})}
 function nextDue(j){
   var t=new Date();t.setHours(0,0,0,0);
@@ -93,8 +93,8 @@ function render(){
   jobs.forEach(function(j){if(j.sched&&j.due<=td){j.sched=false;rv=true;log(j,"status","Back on the list")}});
   if(rv)save();
   var h="",n=0,an=animG;animG=null;
-  var T=mode==="personal"?"task":"project";
-  document.getElementById("ttl").textContent=T==="task"?"Tasks":"Projects";
+  var T=mode==="personal"?"task":"job";
+  document.getElementById("ttl").textContent=T==="task"?"Tasks":"Jobs";
   qEl.placeholder="Search "+T+"s";qEl.setAttribute("aria-label",qEl.placeholder);
   document.getElementById("add").textContent="+ New "+T;
   S.forEach(function(s){
@@ -129,8 +129,8 @@ sheet.addEventListener("click",function(e){if(e.target===sheet)close()});
 
 function openJob(id){
   var j=jobs.filter(function(x){return x.id==id})[0];if(!j)return;
-  var R=[["ref","Job ref"],["name","Name"],["title","Project"],["price","Quote"],["place","Location"],["due","Due"],["rep","Repeat"],["phone","Phone"]];
-  var h='<div class="top"><button class="ed" id="bk">← Back</button><button class="ed" id="ed">Edit</button></div><p class="big" style="font-size:.875rem;color:var(--mute);font-weight:600;margin:14px 0 0">'+(j.type==="personal"?"Task":"Project")+' details</p><div class="info">'+
+  var R=[["ref","Job ref"],["name","Name"],["title","Job"],["price","Quote"],["place","Location"],["due","Due"],["rep","Repeat"],["phone","Phone"]];
+  var h='<div class="top"><button class="ed" id="bk">← Back</button><button class="ed" id="ed">Edit</button></div><p class="big" style="font-size:.875rem;color:var(--mute);font-weight:600;margin:14px 0 0">'+(j.type==="personal"?"Task":"Job")+' details</p><div class="info">'+
    R.filter(function(r){return j[r[0]]&&!(j.type==="personal"&&WK[r[0]])&&!(easy&&(r[0]==="ref"||r[0]==="price"))&&!(r[0]==="rep"&&j.type!=="personal")}).map(function(r){return '<div class="row'+(r[0]==="price"?' q':'')+'"><small>'+(r[0]==="title"&&j.type==="personal"?"Task":r[1])+'</small><span>'+esc(r[0]==="due"?dueFmt(j.due,1)+(j.time?" · "+timeFmt(j.time):""):r[0]==="rep"?RP[j.rep]:j[r[0]])+(r[0]==="due"&&od(j)?' · <b style="color:var(--over)">Overdue</b>':"")+'</span></div>'}).join("")+'</div>';
   var PP=j.type==="personal";
   h+=(PP?'':'<div class="acts">')+
@@ -141,14 +141,14 @@ function openJob(id){
   var notes=j.log.filter(function(l){return l.type==="note"}).reverse();
   h+='<div class="sec">Notes</div><textarea id="nt" placeholder="Add a detail..."></textarea><button class="nb" id="na">Add note</button>';
   notes.forEach(function(n){h+='<div class="note">'+esc(n.text)+'<small>'+fmt(n.t)+'</small></div>'});
-  if(!easy)h+='<div class="sec">Timeline</div><ul class="tl">'+j.log.slice().reverse().map(function(l){return '<li>'+esc(l.type==="note"?"Note added":(function(t){return j.type==="personal"?t.replace("Project added","Task added"):t})(l.text.replace("Job added","Project added")))+'<small>'+fmt(l.t)+'</small></li>'}).join("")+'</ul>';
-  h+='<button class="x" id="del">Delete '+(j.type==="personal"?"task":"project")+'</button>';
+  if(!easy)h+='<div class="sec">Timeline</div><ul class="tl">'+j.log.slice().reverse().map(function(l){return '<li>'+esc(l.type==="note"?"Note added":(function(t){t=t.replace("Project added","Job added");return j.type==="personal"?t.replace("Job added","Task added"):t})(l.text))+'<small>'+fmt(l.t)+'</small></li>'}).join("")+'</ul>';
+  h+='<button class="x" id="del">Delete '+(j.type==="personal"?"task":"job")+'</button>';
   panel.innerHTML=h;sheet.classList.add("on");
   panel.querySelector("#na").onclick=function(){var v=panel.querySelector("#nt").value.trim();if(!v)return;log(j,"note",v);save();var sc=panel.scrollTop;openJob(j.id);panel.scrollTop=sc};
   panel.querySelector("#ed").onclick=function(){form(j)};
   panel.querySelector("#bk").onclick=close;
     panel.querySelectorAll(".stat button").forEach(function(b){b.onclick=function(){setS(j,b.dataset.s);close()}});
-  panel.querySelector("#del").onclick=function(){if(confirm("Delete this "+(j.type==="personal"?"task":"project")+"?")){jobs=jobs.filter(function(x){return x.id!==j.id});save();render();close()}};
+  panel.querySelector("#del").onclick=function(){if(confirm("Delete this "+(j.type==="personal"?"task":"job")+"?")){jobs=jobs.filter(function(x){return x.id!==j.id});save();render();close()}};
 }
 
 function nextRef(){
@@ -159,7 +159,7 @@ function nextRef(){
   while(n.length<m[2].length)n="0"+n;
   return m[1]+n;
 }
-var F=[["title","Project","Project details"],["ref","Job ref","J-001"],["name","Name","John Smith"],["price","Quote","Quote number or value"],["place","Location","Address or area"],["due","Due",""],["time","Time",""],["rep","Repeat",""],["phone","Phone","Phone number"]];
+var F=[["title","Job","Job details"],["ref","Job ref","J-001"],["name","Name","John Smith"],["price","Quote","Quote number or value"],["place","Location","Address or area"],["due","Due",""],["time","Time",""],["rep","Repeat",""],["phone","Phone","Phone number"]];
 function pad(n){return n<10?"0"+n:""+n}
 function iso(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
 sheet2.addEventListener("click",function(e){if(e.target===sheet2)sheet2.classList.remove("on")});
@@ -202,7 +202,7 @@ function form(j){
   var fd={due:j&&j.due||"",time:j&&j.time||""},rp=j&&j.rep||"";
   var dt=function(){return fd.due?dueFmt(fd.due,1)+(fd.time?" · "+timeFmt(fd.time):""):"Select date"};
   var ty=j?(j.type==="personal"?"personal":"work"):mode;
-  var h='<div class="top" style="margin-bottom:12px"><button class="ed" id="fb">← Back</button>'+(j?'<div class="md" id="ft" role="group" aria-label="Project type">'+mdHTML(ty)+'</div>':'')+'</div><p class="big" id="fh">'+(j?'Edit ':'New ')+(ty==="personal"?"task":"project")+'</p><div id="fw"'+(ty==="personal"?' class="pers"':'')+'>'+F.map(function(f){
+  var h='<div class="top" style="margin-bottom:12px"><button class="ed" id="fb">← Back</button>'+(j?'<div class="md" id="ft" role="group" aria-label="Work or personal">'+mdHTML(ty)+'</div>':'')+'</div><p class="big" id="fh">'+(j?'Edit ':'New ')+(ty==="personal"?"task":"job")+'</p><div id="fw"'+(ty==="personal"?' class="pers"':'')+'>'+F.map(function(f){
     if(f[0]==="time")return "";
     if(f[0]==="rep")return '<div class="f pr"><label>Repeat <span class="op">(optional)</span></label><div class="chips" id="rp">'+Object.keys(RP).map(function(k){return '<button type="button" class="chip'+(rp===k?' on':'')+'" data-r="'+k+'">'+RP[k]+'</button>'}).join("")+'</div><p class="hint">When you tick a repeating task off, it moves to Done and comes back on its next due date.</p></div>';
     if(f[0]==="due")return '<div><label for="f-due-btn">Due <span class="op">(optional)</span></label><button type="button" class="dueb" id="f-due-btn">'+esc(dt())+'</button></div>';
@@ -210,9 +210,9 @@ function form(j){
   panel.innerHTML=h+'<button class="sv" id="sv">Save</button>';
   if(j)panel.querySelector("#ft").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;
     ty=b.dataset.m;this.innerHTML=mdHTML(ty);var pe=ty==="personal";
-    panel.querySelector("#fh").textContent=(j?"Edit ":"New ")+(pe?"task":"project");
-    panel.querySelector('label[for="f-title"]').textContent=pe?"Task":"Project";
-    panel.querySelector("#f-title").placeholder=pe?"Task details":"Project details";panel.querySelector("#fw").classList.toggle("pers",ty==="personal")});
+    panel.querySelector("#fh").textContent=(j?"Edit ":"New ")+(pe?"task":"job");
+    panel.querySelector('label[for="f-title"]').textContent=pe?"Task":"Job";
+    panel.querySelector("#f-title").placeholder=pe?"Task details":"Job details";panel.querySelector("#fw").classList.toggle("pers",ty==="personal")});
   panel.querySelector("#rp").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;rp=b.dataset.r;this.querySelectorAll("button").forEach(function(x){x.classList.toggle("on",x===b)})});
   panel.querySelector("#fb").onclick=function(){if(j)openJob(j.id);else close()};
   panel.querySelector("#f-due-btn").onclick=function(){pickDue(fd,function(){panel.querySelector("#f-due-btn").textContent=dt()})};
@@ -227,7 +227,7 @@ function form(j){
       openJob(j.id);return;
     }
     if(window.track)track("add_item",{item_type:ty});
-    animG="all";jobs.unshift({id:Date.now(),type:ty,ref:ty==="personal"?"":g("ref"),name:g("name"),title:g("title"),place:g("place"),price:g("price"),due:g("due"),time:g("time"),rep:ty==="personal"?rp:"",phone:g("phone"),s:"new",log:[{t:Date.now(),type:"added",text:"Project added"}]});
+    animG="all";jobs.unshift({id:Date.now(),type:ty,ref:ty==="personal"?"":g("ref"),name:g("name"),title:g("title"),place:g("place"),price:g("price"),due:g("due"),time:g("time"),rep:ty==="personal"?rp:"",phone:g("phone"),s:"new",log:[{t:Date.now(),type:"added",text:"Job added"}]});
     save();render();close();
   };
 }
@@ -263,3 +263,59 @@ render();
   setTimeout(show,2500);
 })();
 if("serviceWorker" in navigator)window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})});
+
+/* ---- Back up & restore (a file you keep; nothing is sent anywhere) ---- */
+(function(){
+  var OK={"new":1,doing:1,wait:1,done:1};
+  function last(){try{return +localStorage.getItem("lastBackup")||0}catch(e){return 0}}
+  function nudge(){var a=document.getElementById("bkl");if(a)a.classList.toggle("need",jobs.length>=3&&Date.now()-last()>30*864e5)}
+  window.eazieNudge=nudge;
+  function str(v,n){return typeof v==="string"?v.slice(0,n):""}
+  function clean(j){
+    if(!j||typeof j!=="object")return null;
+    var o={id:Number(j.id),type:j.type==="personal"?"personal":"work",ref:str(j.ref,40),name:str(j.name,200),title:str(j.title,300),place:str(j.place,300),price:str(j.price,100),
+      due:/^\d{4}-\d\d-\d\d$/.test(j.due)?j.due:"",time:/^\d\d:\d\d$/.test(j.time)?j.time:"",phone:str(j.phone,60),rep:RP.hasOwnProperty(j.rep)?j.rep:"",s:OK[j.s]?j.s:"new"};
+    if(!isFinite(o.id)||!(o.title||o.name))return null;
+    if(j.sched===true)o.sched=true;if(j.spawned===true)o.spawned=true;
+    o.log=Array.isArray(j.log)?j.log.slice(0,500).map(function(l){return l&&typeof l.t==="number"?{t:l.t,type:str(l.type,20),text:str(l.text,2000)}:null}).filter(Boolean):[];
+    return o;
+  }
+  function show(msg,bad){
+    var l=last();
+    panel2.innerHTML='<div class="top"><button class="ed" id="bb">&larr; Back</button></div><p class="big" style="margin-top:14px">Back up &amp; restore</p>'+
+      '<p style="margin:8px 0 0;line-height:1.5">Your jobs and tasks are saved on this phone only. Save a copy now and then, so you can get them back if you change phone or clear your browser.</p>'+
+      '<button class="sv" id="bu">Back up now</button><button class="ed" id="rs" style="width:100%;margin-top:12px">Restore from a backup</button>'+
+      '<p class="hint">'+(l?"Last backup: "+esc(new Date(l).toLocaleDateString([],{weekday:"short",day:"numeric",month:"short",year:"numeric"})):"You haven\u2019t backed up yet.")+" \u00b7 "+jobs.length+" item"+(jobs.length===1?"":"s")+" on this phone</p>"+
+      (msg?'<p style="margin:12px 0 0;font-weight:600;color:'+(bad?"var(--over)":"var(--acc)")+'">'+esc(msg)+'</p>':'');
+    panel2.onclick=function(e){var b=e.target.closest("button");if(!b)return;
+      if(b.id==="bb")sheet2.classList.remove("on");else if(b.id==="bu")backup();else if(b.id==="rs")pick()};
+    sheet2.classList.add("on");
+  }
+  function backup(){
+    var name="eazie-backup-"+iso(new Date())+".json",
+        file=new File([JSON.stringify({app:"eazie",v:1,saved:new Date().toISOString(),jobs:jobs},null,1)],name,{type:"application/json"});
+    function done(){try{localStorage.setItem("lastBackup",String(Date.now()))}catch(e){}nudge();show("Backup saved. Keep the file somewhere safe, like your email.")}
+    function dl(){var a=document.createElement("a");a.href=URL.createObjectURL(file);a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1500);done()}
+    if(window.matchMedia("(pointer:coarse)").matches&&navigator.canShare&&navigator.canShare({files:[file]}))
+      navigator.share({files:[file],title:"eazie backup"}).then(done).catch(function(e){if(!e||e.name!=="AbortError")dl()});
+    else dl();
+  }
+  function restore(text){
+    var d;try{d=JSON.parse(text)}catch(e){show("That doesn\u2019t look like an eazie backup.",1);return}
+    var list=Array.isArray(d)?d:(d&&d.app==="eazie"&&Array.isArray(d.jobs)?d.jobs:null);
+    if(!list){show("That doesn\u2019t look like an eazie backup.",1);return}
+    var have={},add=0,skip=0;jobs.forEach(function(j){have[j.id]=1});
+    list.forEach(function(x){var c=clean(x);if(!c)return;if(have[c.id]){skip++;return}have[c.id]=1;jobs.push(c);add++});
+    if(add){animG="all";save();render()}
+    show(add?"Restored "+add+" item"+(add===1?"":"s")+(skip?" ("+skip+" were already here).":"."):"Nothing new to restore"+(skip?": those "+skip+" items are already on this phone.":"."),!add&&!skip);
+  }
+  function pick(){
+    var inp=document.createElement("input");inp.type="file";inp.accept=".json,application/json";
+    inp.onchange=function(){var f=inp.files[0];if(!f)return;if(f.size>5e6){show("That file is too big to be an eazie backup.",1);return}
+      var r=new FileReader();r.onload=function(){restore(String(r.result))};r.onerror=function(){show("Couldn\u2019t read that file.",1)};r.readAsText(f)};
+    inp.click();
+  }
+  var l=document.getElementById("bkl");
+  if(l)l.addEventListener("click",function(e){e.preventDefault();show()});
+  nudge();
+})();

@@ -1,5 +1,5 @@
 /* eazie app service worker (scope: /app/). Bump VERSION whenever you upload new app files. */
-const VERSION = "eazieapp-1";
+const VERSION = "eazieapp-3";
 const FILES = ["./", "index.html", "assets/app.css", "assets/app.js", "manifest.webmanifest",
   "../assets/eazie.css", "../assets/analytics.js", "../fonts/inter-latin-wght-normal.woff2",
   "../fonts/pacifico-latin-400-normal.woff2", "../favicon.svg", "../icons/icon-192.png", "../icons/icon-512.png"];

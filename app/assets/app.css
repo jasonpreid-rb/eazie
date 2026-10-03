@@ -146,3 +146,4 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{
 .legal{text-align:center;margin:28px 0 0;font-size:.8125rem}
 .legal a{color:var(--mute)}
 .legal a{margin:0 10px}
+.legal a.need{color:var(--acc);font-weight:600}

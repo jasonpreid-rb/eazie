@@ -30,6 +30,13 @@ Upload the changed files and change `VERSION` in `app/sw.js` (for example `eazie
 Your GA4 ID is set in `assets/analytics.js`. Nothing loads until a visitor presses Accept.
 Search Console: verify the Domain property with a DNS TXT record, then submit `sitemap.xml`.
 
+## Vercel Web Analytics
+The snippet is in every page. Enable it once in the Vercel dashboard (project > Analytics > Enable). It only reports from the deployed Vercel site, not locally. It is cookie-free, so it is not behind the consent banner.
+
+## Backup
+The app has a **Back up & restore** link under the list. It saves a `.json` file the person keeps; nothing is sent to a server.
+After changing app files, bump `VERSION` in `app/sw.js`.
+
 ## Things to know
 - Data lives in each person's browser on that device. No sync between devices.
 - To use the "e" as the home screen icon, replace the files in `icons/` and `apple-touch-icon.png`.
