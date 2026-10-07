@@ -1,0 +1,9 @@
+{
+  "redirects": [
+    {
+      "source": "/why-eazie.html",
+      "destination": "/",
+      "permanent": true
+    }
+  ]
+}
