@@ -12,7 +12,10 @@ function dueFmt(iso,full){
   return d.toLocaleDateString([],o);
 }
 function timeFmt(t){if(!t)return "";var p=t.split(":");return new Date(2000,0,1,+p[0],+p[1]).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}
-function vis(j){return !j.sched||!!qEl.value.trim()||j.due<=iso(new Date())}
+function showOn(j){if(!j.lead||!j.due)return j.due;var d=new Date(j.due+"T00:00:00");d.setDate(d.getDate()-j.lead);return iso(d)}
+function inDays(j){if(!j.lead||!j.due)return "";var n=new Date();n.setHours(0,0,0,0);var k=Math.round((new Date(j.due+"T00:00:00")-n)/864e5);return k>1?" \u00b7 in "+k+" days":""}
+function applySched(j){if(j.s==="done"||!j.lead||!j.due||j.sched)return;if(showOn(j)>iso(new Date())){j.sched=true;if(j.s!=="new")j.s="new";var w=dueFmt(showOn(j),1);log(j,"status","Hidden until "+w+" ("+LD[j.lead]+" before due)");toast("Hidden until "+w+". Find it under Scheduled.")}}
+function vis(j){return !j.sched||!!qEl.value.trim()||showOn(j)<=iso(new Date())}
 function att(j){if(!j.due||j.s==="done")return false;var n=new Date();n.setHours(0,0,0,0);return Math.round((new Date(j.due+"T00:00:00")-n)/864e5)<=1}
 function od(j){if(!j.due||j.s==="done")return false;var n=new Date();n.setHours(0,0,0,0);return new Date(j.due+"T00:00:00")<n}
 function save(){if(window.eazieNudge)eazieNudge();if(window.eazieInstallCheck)setTimeout(window.eazieInstallCheck,1200);try{localStorage.setItem("jobs",JSON.stringify(jobs))}catch(e){}}
@@ -40,8 +43,8 @@ function setS(j,k){if(j.s===k)return;
   if(k==="done"&&j.rep&&j.type==="personal"&&!j.spawned){
     var nx=nextDue(j);j.s="done";j.spawned=true;
     log(j,"status","Status: Done");log(j,"status","Repeats "+RP[j.rep].toLowerCase()+", next on "+dueFmt(nx,1));
-    jobs.unshift({id:Date.now()+1,type:j.type,ref:j.ref||"",name:j.name||"",title:j.title,place:j.place||"",price:j.price||"",due:nx,time:j.time||"",rep:j.rep,phone:j.phone||"",s:"new",sched:true,log:[{t:Date.now(),type:"added",text:"Scheduled repeat ("+RP[j.rep].toLowerCase()+")"}]});
-    toast("Done! Back on "+dueFmt(nx,1));animG="all";save();render();return}
+    jobs.unshift({id:Date.now()+1,type:j.type,ref:j.ref||"",name:j.name||"",title:j.title,place:j.place||"",price:j.price||"",due:nx,time:j.time||"",rep:j.rep,lead:j.lead||0,phone:j.phone||"",s:"new",sched:true,log:[{t:Date.now(),type:"added",text:"Scheduled repeat ("+RP[j.rep].toLowerCase()+")"}]});
+    toast("Done! Back on "+dueFmt(showOn({due:nx,lead:j.lead}),1));animG="all";save();render();return}
 j.s=k;log(j,"status","Status: "+sInfo(k)[2]);animG="all";save();render()}
 var sheet2=document.getElementById("sheet2"),panel2=document.getElementById("panel2");
 var list=document.getElementById("list"),sheet=document.getElementById("sheet"),panel=document.getElementById("panel");
@@ -53,6 +56,7 @@ var mode="work";
 try{if(localStorage.getItem("mode")==="personal")mode="personal"}catch(e){}
 function inMode(j){return (j.type==="personal"?"personal":"work")===mode}
 var RP={"":"Never",daily:"Daily",weekly:"Weekly",monthly:"Monthly",yearly:"Yearly"},tt;
+var LD={0:"None",7:"1 week",14:"2 weeks",30:"1 month",60:"2 months"};
 function toast(m){var t=document.getElementById("toast");t.textContent=m;t.classList.add("on");clearTimeout(tt);tt=setTimeout(function(){t.classList.remove("on")},3500)}
 var OPT={name:1,price:1,place:1,phone:1},WK={ref:1,name:1,price:1,phone:1},EZ={ref:1,price:1};
 var easy=false;try{easy=localStorage.getItem("easy")==="1"}catch(e){}
@@ -74,7 +78,7 @@ var qEl=document.getElementById("q");
 function hit(j){var q=qEl.value.trim().toLowerCase();if(!q)return true;
   var t=[j.ref,j.name,j.title,j.place,j.price,j.due?dueFmt(j.due):"",j.phone].concat((j.log||[]).filter(function(l){return l.type==="note"}).map(function(l){return l.text})).join(" ").toLowerCase();
   return t.indexOf(q)>-1}
-function isCol(k){if(k in col)return !!col[k];return k==="done"||(k.indexOf("d_")===0&&k!=="d_w")}
+function isCol(k){if(k in col)return !!col[k];return k==="done"||k==="sch"||(k.indexOf("d_")===0&&k!=="d_w")}
 function doneAt(j){var l=j.log||[];for(var i=l.length-1;i>=0;i--){if(l[i].type==="status"&&/^Status: Done/.test(l[i].text))return l[i].t}return l.length?l[l.length-1].t:j.id}
 function fmtD(t){return new Date(t).toLocaleDateString([],{weekday:"short",day:"numeric",month:"short"})}
 function bucket(t){
@@ -90,7 +94,7 @@ function bucket(t){
 }
 function render(){
   var td=iso(new Date()),rv=false;
-  jobs.forEach(function(j){if(j.sched&&j.due<=td){j.sched=false;rv=true;log(j,"status","Back on the list")}});
+  jobs.forEach(function(j){if(j.sched&&showOn(j)<=td){j.sched=false;rv=true;log(j,"status","Back on the list"+(j.lead?", due "+dueFmt(j.due,1):""))}});
   if(rv)save();
   var h="",n=0,an=animG;animG=null;
   var T=mode==="personal"?"task":"job";
@@ -109,13 +113,17 @@ function render(){
       if(s[0]==="done"){var bk=bucket(doneAt(j)),sOpen=!!qEl.value.trim()||!isCol("d_"+bk[0]);
         if(bk[0]!==lastB){lastB=bk[0];h+='<button class="sub" data-g="d_'+bk[0]+'" aria-expanded="'+sOpen+'"><span>'+bk[1]+'</span><span class="sc">'+bc[bk[0]]+'</span><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'}
         if(!sOpen)return}
-      var P=j.type==="personal",du=j.due?'<span'+(od(j)?' style="color:var(--over);font-weight:600"':'')+'>Due '+esc(dueFmt(j.due)+(j.time?" "+timeFmt(j.time):""))+'</span>':'';
+      var P=j.type==="personal",du=j.due?'<span'+(od(j)?' style="color:var(--over);font-weight:600"':'')+'>Due '+esc(dueFmt(j.due)+(j.time?" "+timeFmt(j.time):"")+inDays(j))+'</span>':'';
       if(j.s==="done")du='✓ Done '+fmtD(doneAt(j));
-      if(j.sched&&j.due>iso(new Date()))du='<span>Appears '+esc(dueFmt(j.due,1))+'</span>';
+      if(j.sched&&showOn(j)>iso(new Date()))du='<span>Appears '+esc(dueFmt(showOn(j),1))+(j.lead?' \u00b7 due '+esc(dueFmt(j.due,1)):'')+'</span>';
       var sub=(P?[j.place?esc(j.place):"",du,j.rep?"↻ "+RP[j.rep]:""]:[(!easy&&j.ref)?esc(j.ref):"",(j.name&&j.title)?esc(j.title):"",du]).filter(Boolean);
       h+='<button class="job'+(go?' in':'')+(att(j)?' pulse':'')+'" style="--c:'+s[3]+';--pc:'+(od(j)?"#ff1f1f":"var(--acc)")+';animation-delay:'+(Math.min(n++,12)*45)+'ms" data-id="'+j.id+'">'+(!P&&!easy&&j.price?'<span class="r">'+esc(j.price)+'</span>':'')+'<b>'+esc(P?(j.title||j.name):(j.name||j.title))+'</b><small>'+sub.join(" · ")+'</small></button>';
     });
   });
+  var sj=jobs.filter(function(j){return j.sched&&j.s!=="done"&&inMode(j)&&showOn(j)>td}).sort(function(a,b){return showOn(a)<showOn(b)?-1:showOn(a)>showOn(b)?1:0});
+  if(!qEl.value.trim()&&sj.length){var so=!isCol("sch");
+    h+='<button class="sub" data-g="sch" aria-expanded="'+so+'"><span>Scheduled</span><span class="sc">'+sj.length+'</span><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>';
+    if(so)sj.forEach(function(j){h+='<button class="job" style="--c:'+sInfo(j.s)[3]+'" data-id="'+j.id+'"><b>'+esc(j.title||j.name)+'</b><small>Appears '+esc(dueFmt(showOn(j),1))+(j.lead?' \u00b7 due '+esc(dueFmt(j.due,1)):'')+'</small></button>'})}
   list.innerHTML=h||(jobs.filter(function(j){return inMode(j)&&vis(j)}).length?'<div class="empty">No matches</div>':'<div class="empty">No '+T+'s yet.<br>Tap + New '+T+'</div>');
 }
 list.addEventListener("click",function(e){
@@ -129,9 +137,9 @@ sheet.addEventListener("click",function(e){if(e.target===sheet)close()});
 
 function openJob(id){
   var j=jobs.filter(function(x){return x.id==id})[0];if(!j)return;
-  var R=[["ref","Job ref"],["name","Name"],["title","Job"],["price","Quote"],["place","Location"],["due","Due"],["rep","Repeat"],["phone","Phone"]];
+  var R=[["ref","Job ref"],["name","Name"],["title","Job"],["price","Quote"],["place","Location"],["due","Due"],["rep","Repeat"],["lead","Remind me"],["phone","Phone"]];
   var h='<div class="top"><button class="ed" id="bk">← Back</button><button class="ed" id="ed">Edit</button></div><p class="big" style="font-size:.875rem;color:var(--mute);font-weight:600;margin:14px 0 0">'+(j.type==="personal"?"Task":"Job")+' details</p><div class="info">'+
-   R.filter(function(r){return j[r[0]]&&!(j.type==="personal"&&WK[r[0]])&&!(easy&&(r[0]==="ref"||r[0]==="price"))&&!(r[0]==="rep"&&j.type!=="personal")}).map(function(r){return '<div class="row'+(r[0]==="price"?' q':'')+'"><small>'+(r[0]==="title"&&j.type==="personal"?"Task":r[1])+'</small><span>'+esc(r[0]==="due"?dueFmt(j.due,1)+(j.time?" · "+timeFmt(j.time):""):r[0]==="rep"?RP[j.rep]:j[r[0]])+(r[0]==="due"&&od(j)?' · <b style="color:var(--over)">Overdue</b>':"")+'</span></div>'}).join("")+'</div>';
+   R.filter(function(r){return j[r[0]]&&!(j.type==="personal"&&WK[r[0]])&&!(easy&&(r[0]==="ref"||r[0]==="price"))&&!(r[0]==="rep"&&j.type!=="personal")}).map(function(r){return '<div class="row'+(r[0]==="price"?' q':'')+'"><small>'+(r[0]==="title"&&j.type==="personal"?"Task":r[1])+'</small><span>'+esc(r[0]==="due"?dueFmt(j.due,1)+(j.time?" · "+timeFmt(j.time):""):r[0]==="rep"?RP[j.rep]:r[0]==="lead"?LD[j.lead]+" before":j[r[0]])+(r[0]==="due"&&od(j)?' · <b style="color:var(--over)">Overdue</b>':"")+'</span></div>'}).join("")+'</div>';
   var PP=j.type==="personal";
   h+=(PP?'':'<div class="acts">')+
    (PP?'':j.phone?'<a href="tel:'+esc(j.phone.replace(/\s+/g,""))+'">Call</a>':'<a style="opacity:.35" aria-disabled="true">Call</a>')+
@@ -199,12 +207,12 @@ function pickDue(fd,done){
   sheet2.classList.add("on");draw();
 }
 function form(j){
-  var fd={due:j&&j.due||"",time:j&&j.time||""},rp=j&&j.rep||"";
+  var fd={due:j&&j.due||"",time:j&&j.time||""},rp=j&&j.rep||"",ld=j&&j.lead||0;
   var dt=function(){return fd.due?dueFmt(fd.due,1)+(fd.time?" · "+timeFmt(fd.time):""):"Select date"};
   var ty=j?(j.type==="personal"?"personal":"work"):mode;
   var h='<div class="top" style="margin-bottom:12px"><button class="ed" id="fb">← Back</button>'+(j?'<div class="md" id="ft" role="group" aria-label="Work or personal">'+mdHTML(ty)+'</div>':'')+'</div><p class="big" id="fh">'+(j?'Edit ':'New ')+(ty==="personal"?"task":"job")+'</p><div id="fw"'+(ty==="personal"?' class="pers"':'')+'>'+F.map(function(f){
     if(f[0]==="time")return "";
-    if(f[0]==="rep")return '<div class="f pr"><label>Repeat <span class="op">(optional)</span></label><div class="chips" id="rp">'+Object.keys(RP).map(function(k){return '<button type="button" class="chip'+(rp===k?' on':'')+'" data-r="'+k+'">'+RP[k]+'</button>'}).join("")+'</div><p class="hint">When you tick a repeating task off, it moves to Done and comes back on its next due date.</p></div>';
+    if(f[0]==="rep")return '<div class="f pr"><label>Repeat <span class="op">(optional)</span></label><div class="chips" id="rp">'+Object.keys(RP).map(function(k){return '<button type="button" class="chip'+(rp===k?' on':'')+'" data-r="'+k+'">'+RP[k]+'</button>'}).join("")+'</div><p class="hint">When you tick a repeating task off, it moves to Done and comes back on its next due date.</p></div>'+'<div class="f pr"><label>Remind me ahead <span class="op">(optional)</span></label><div class="chips" id="ld">'+Object.keys(LD).map(function(k){return '<button type="button" class="chip'+(ld==k?' on':'')+'" data-l="'+k+'">'+LD[k]+'</button>'}).join("")+'</div><p class="hint">Keeps it out of sight until then, so your list stays calm. Needs a due date.</p></div>';
     if(f[0]==="due")return '<div><label for="f-due-btn">Due <span class="op">(optional)</span></label><button type="button" class="dueb" id="f-due-btn">'+esc(dt())+'</button></div>';
     return '<div class="f'+(WK[f[0]]?' wk':'')+(EZ[f[0]]?' ez':'')+'"><label for="f-'+f[0]+'">'+(f[0]==="title"&&ty==="personal"?"Task":f[1])+(OPT[f[0]]?' <span class="op">(optional)</span>':'')+'</label><input id="f-'+f[0]+'" type="'+(f[0]==="phone"?"tel":"text")+'" placeholder="'+(f[0]==="title"&&ty==="personal"?"Task details":f[2])+'" autocomplete="off" value="'+esc(j?(j[f[0]]||""):(f[0]==="ref"?nextRef():""))+'"></div>'}).join("")+'</div>';
   panel.innerHTML=h+'<button class="sv" id="sv">Save</button>';
@@ -214,20 +222,24 @@ function form(j){
     panel.querySelector('label[for="f-title"]').textContent=pe?"Task":"Job";
     panel.querySelector("#f-title").placeholder=pe?"Task details":"Job details";panel.querySelector("#fw").classList.toggle("pers",ty==="personal")});
   panel.querySelector("#rp").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;rp=b.dataset.r;this.querySelectorAll("button").forEach(function(x){x.classList.toggle("on",x===b)})});
+  panel.querySelector("#ld").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;ld=+b.dataset.l;this.querySelectorAll("button").forEach(function(x){x.classList.toggle("on",x===b)})});
   panel.querySelector("#fb").onclick=function(){if(j)openJob(j.id);else close()};
   panel.querySelector("#f-due-btn").onclick=function(){pickDue(fd,function(){panel.querySelector("#f-due-btn").textContent=dt()})};
   sheet.classList.add("on");
   var g=function(k){return k==="due"?fd.due:k==="time"?fd.time:k==="rep"?rp:panel.querySelector("#f-"+k).value.trim()};
   panel.querySelector("#sv").onclick=function(){
     if(!g("title")){toast("Please add a title");panel.querySelector("#f-title").focus();return}
+    var nl=ty==="personal"?ld:0;
+    if(nl&&!fd.due){toast("Pick a due date to use Remind me ahead");return}
     if(j){
       var ch=[];F.forEach(function(f){var k=f[0],v=g(k);if(v!==(j[k]||"")){var pv=function(x){return k==="rep"?RP[x||""]:x?(k==="due"?dueFmt(x,1):k==="time"?timeFmt(x):x):"empty"};ch.push((k==="title"&&ty==="personal"?"Task":f[1])+": "+pv(j[k])+" → "+pv(v));j[k]=v}});
+      if(nl!==(j.lead||0)){ch.push("Remind ahead: "+LD[j.lead||0]+" \u2192 "+LD[nl]);j.lead=nl}
       if((j.type==="personal"?"personal":"work")!==ty){ch.push("Type: "+(ty==="personal"?"Work → Personal":"Personal → Work"));j.type=ty}
-      if(ch.length){log(j,"edit","Edited: "+ch.join(", "));save();render()}
+      if(ch.length){log(j,"edit","Edited: "+ch.join(", "));applySched(j);save();render()}
       openJob(j.id);return;
     }
     if(window.track)track("add_item",{item_type:ty});
-    animG="all";jobs.unshift({id:Date.now(),type:ty,ref:ty==="personal"?"":g("ref"),name:g("name"),title:g("title"),place:g("place"),price:g("price"),due:g("due"),time:g("time"),rep:ty==="personal"?rp:"",phone:g("phone"),s:"new",log:[{t:Date.now(),type:"added",text:"Job added"}]});
+    animG="all";jobs.unshift({id:Date.now(),type:ty,ref:ty==="personal"?"":g("ref"),name:g("name"),title:g("title"),place:g("place"),price:g("price"),due:g("due"),time:g("time"),rep:ty==="personal"?rp:"",lead:nl,phone:g("phone"),s:"new",log:[{t:Date.now(),type:"added",text:"Job added"}]});applySched(jobs[0]);
     save();render();close();
   };
 }
@@ -276,7 +288,7 @@ if("serviceWorker" in navigator)window.addEventListener("load",function(){naviga
     var o={id:Number(j.id),type:j.type==="personal"?"personal":"work",ref:str(j.ref,40),name:str(j.name,200),title:str(j.title,300),place:str(j.place,300),price:str(j.price,100),
       due:/^\d{4}-\d\d-\d\d$/.test(j.due)?j.due:"",time:/^\d\d:\d\d$/.test(j.time)?j.time:"",phone:str(j.phone,60),rep:RP.hasOwnProperty(j.rep)?j.rep:"",s:OK[j.s]?j.s:"new"};
     if(!isFinite(o.id)||!(o.title||o.name))return null;
-    if(j.sched===true)o.sched=true;if(j.spawned===true)o.spawned=true;
+    if(j.sched===true)o.sched=true;if(j.spawned===true)o.spawned=true;var ld0=Number(j.lead);if(ld0>0&&LD.hasOwnProperty(ld0))o.lead=ld0;
     o.log=Array.isArray(j.log)?j.log.slice(0,500).map(function(l){return l&&typeof l.t==="number"?{t:l.t,type:str(l.type,20),text:str(l.text,2000)}:null}).filter(Boolean):[];
     return o;
   }
