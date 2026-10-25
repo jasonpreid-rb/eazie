@@ -56,7 +56,7 @@ var mode="work";
 try{if(localStorage.getItem("mode")==="personal")mode="personal"}catch(e){}
 function inMode(j){return (j.type==="personal"?"personal":"work")===mode}
 var RP={"":"Never",daily:"Daily",weekly:"Weekly",monthly:"Monthly",yearly:"Yearly"},tt;
-var LD={0:"None",7:"1 week",14:"2 weeks",30:"1 month",60:"2 months"};
+var LD={0:"None",1:"1 day",7:"1 week",14:"2 weeks",30:"1 month",60:"2 months"};
 function toast(m){var t=document.getElementById("toast");t.textContent=m;t.classList.add("on");clearTimeout(tt);tt=setTimeout(function(){t.classList.remove("on")},3500)}
 var OPT={name:1,price:1,place:1,phone:1},WK={ref:1,name:1,price:1,phone:1},EZ={ref:1,price:1};
 var easy=false;try{easy=localStorage.getItem("easy")==="1"}catch(e){}
@@ -75,6 +75,44 @@ var animG="all";
 var col={done:true};
 try{var _c=localStorage.getItem("col");if(_c)col=JSON.parse(_c)}catch(e){}
 var qEl=document.getElementById("q");
+/* ---- Week view ---- */
+var view="list",wk=0;
+try{if(localStorage.getItem("view")==="week")view="week"}catch(e){}
+function weekStart(off){var n=new Date();n.setHours(0,0,0,0);n.setDate(n.getDate()-((n.getDay()+6)%7)+off*7);return n}
+function shortD(d){return d.toLocaleDateString([],{day:"numeric",month:"short"})}
+function byTime(a,b){var x=a.time||"",y=b.time||"";return x<y?-1:x>y?1:0}
+function wkCard(j,go,i,showDue){
+  var s=sInfo(j.s)||S[0],P=j.type==="personal",tm=j.time?esc(timeFmt(j.time)):"";
+  var du=showDue?'<span style="color:var(--over);font-weight:600">Due '+esc(dueFmt(j.due))+'</span>':"";
+  var sub=(P?[j.place?esc(j.place):"",tm,du,j.rep?"\u21bb "+RP[j.rep]:"",s[2]]:[(!easy&&j.ref)?esc(j.ref):"",(j.name&&j.title)?esc(j.title):"",tm,du,s[2]]).filter(Boolean);
+  return '<button class="job'+(go?' in':'')+(att(j)?' pulse':'')+'" style="--c:'+s[3]+';--pc:'+(od(j)?"#ff1f1f":"var(--acc)")+';animation-delay:'+(Math.min(i,12)*45)+'ms" data-id="'+j.id+'">'+(!P&&!easy&&j.price?'<span class="r">'+esc(j.price)+'</span>':'')+'<b>'+esc(P?(j.title||j.name):(j.name||j.title))+'</b><small>'+sub.join(" \u00b7 ")+'</small></button>';
+}
+function weekHTML(go){
+  var ws=weekStart(wk),we=new Date(ws);we.setDate(ws.getDate()+6);
+  var td=iso(new Date()),i=0,h="";
+  var pool=jobs.filter(function(j){return j.due&&j.s!=="done"&&inMode(j)&&hit(j)});
+  var lbl=wk===0?"This week":wk===1?"Next week":wk===-1?"Last week":"Week of "+shortD(ws);
+  h+='<div class="mnav" style="margin-top:8px"><button data-w="-1" aria-label="Previous week">\u2039</button><div class="wl"><b>'+lbl+'</b><small>'+shortD(ws)+' \u2013 '+shortD(we)+'</small></div><button data-w="1" aria-label="Next week">\u203a</button></div>';
+  if(wk!==0)h+='<button class="ed" data-w="0" style="width:100%;margin-top:8px">Back to this week</button>';
+  if(wk===0){
+    var ov=pool.filter(function(j){return j.due<iso(ws)}).sort(function(a,b){return a.due<b.due?-1:a.due>b.due?1:byTime(a,b)});
+    if(ov.length){h+='<h2 class="wh od">Overdue <span>'+ov.length+'</span></h2>';ov.forEach(function(j){h+=wkCard(j,go,i++,true)})}
+  }
+  for(var d=0;d<7;d++){
+    var dd=new Date(ws);dd.setDate(ws.getDate()+d);var k=iso(dd);
+    var js=pool.filter(function(j){return j.due===k}).sort(byTime);
+    var name=dd.toLocaleDateString([],{weekday:"long",day:"numeric",month:"short"});
+    h+='<h2 class="wh'+(k===td?' tdy':'')+(js.length?'':' e')+'">'+esc(name)+'<span>'+(js.length?(k===td?"Today \u00b7 ":"")+js.length:(k===td?"Today \u00b7 Nothing due":"Nothing due"))+'</span></h2>';
+    js.forEach(function(j){h+=wkCard(j,go,i++,false)});
+  }
+  return h;
+}
+var vt=document.createElement("div");vt.className="vw";vt.id="vt";vt.setAttribute("role","group");vt.setAttribute("aria-label","View");
+function vtHTML(){return [["list","List"],["week","Week"]].map(function(x){return '<button type="button" data-v="'+x[0]+'" aria-pressed="'+(view===x[0])+'">'+x[1]+'</button>'}).join("")}
+vt.innerHTML=vtHTML();list.parentNode.insertBefore(vt,list);
+vt.addEventListener("click",function(e){var b=e.target.closest("button");if(!b||b.dataset.v===view)return;
+  view=b.dataset.v;wk=0;try{localStorage.setItem("view",view)}catch(x){}
+  vt.innerHTML=vtHTML();animG="all";render()});
 function hit(j){var q=qEl.value.trim().toLowerCase();if(!q)return true;
   var t=[j.ref,j.name,j.title,j.place,j.price,j.due?dueFmt(j.due):"",j.phone].concat((j.log||[]).filter(function(l){return l.type==="note"}).map(function(l){return l.text})).join(" ").toLowerCase();
   return t.indexOf(q)>-1}
@@ -101,6 +139,7 @@ function render(){
   document.getElementById("ttl").textContent=T==="task"?"Tasks":"Jobs";
   qEl.placeholder="Search "+T+"s";qEl.setAttribute("aria-label",qEl.placeholder);
   document.getElementById("add").textContent="+ New "+T;
+  if(view==="week"){list.innerHTML=weekHTML(an==="all");return}
   S.forEach(function(s){
     var js=jobs.filter(function(j){return j.s===s[0]&&inMode(j)&&hit(j)&&vis(j)});
     if(!js.length)return;
@@ -127,6 +166,8 @@ function render(){
   list.innerHTML=h||(jobs.filter(function(j){return inMode(j)&&vis(j)}).length?'<div class="empty">No matches</div>':'<div class="empty">No '+T+'s yet.<br>Tap + New '+T+'</div>');
 }
 list.addEventListener("click",function(e){
+  var w=e.target.closest("[data-w]");
+  if(w){wk=+w.dataset.w===0?0:wk+ +w.dataset.w;render();return}
   var g=e.target.closest(".gh,.sub");
   if(g){col[g.dataset.g]=!isCol(g.dataset.g);if(!col[g.dataset.g])animG=g.dataset.g;try{localStorage.setItem("col",JSON.stringify(col))}catch(x){}render();return}
   var b=e.target.closest(".job");if(b)openJob(b.dataset.id);
